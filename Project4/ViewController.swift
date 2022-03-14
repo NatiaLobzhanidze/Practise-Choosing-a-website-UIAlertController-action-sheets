@@ -11,7 +11,7 @@ import UIKit
 class ViewController: UIViewController, WKNavigationDelegate{
     var webView: WKWebView!
     var progressView: UIProgressView!
-    
+    var websites = ["adjaranet.com","hackingwithswift.com","w3schools.com"]
     override func loadView() {
         webView = WKWebView()
         webView.navigationDelegate = self
@@ -34,14 +34,15 @@ class ViewController: UIViewController, WKNavigationDelegate{
         
         webView.addObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress), options: .new, context: nil)
         
-        let url = URL(string: "https://www.hackingwithswift.com")!
+        let url = URL(string: "https://www." + websites[0])!
         webView.load(URLRequest(url:url))
         webView.allowsBackForwardNavigationGestures = true
     }
     @objc func tappedBtn(){
         let ac = UIAlertController(title: "Open page ", message: nil, preferredStyle: .actionSheet)
-        ac.addAction(UIAlertAction(title: "adjaranet.com", style: .default, handler: openPage))
-        ac.addAction(UIAlertAction(title: "w3schools.com", style: .destructive, handler: openPage))
+        for website in websites{
+            ac.addAction(UIAlertAction(title: website, style: .default, handler: openPage))
+        }
         ac.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         ac.popoverPresentationController?.barButtonItem = navigationItem.rightBarButtonItem
         present(ac, animated: true)
@@ -60,5 +61,18 @@ class ViewController: UIViewController, WKNavigationDelegate{
             progressView.progress = Float(webView.estimatedProgress)
         }
     }
+    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+        let url = navigationAction.request.url
+        if let host = url?.host{
+            for website in websites{
+                if host.contains(website){
+                    decisionHandler(.allow)
+                    return
+                }
+            }
+        }
+        decisionHandler(.cancel)
+    }
+   
 }
 
